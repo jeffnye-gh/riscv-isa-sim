@@ -1,6 +1,6 @@
 #pragma once
 #include "cfg.h"
-//#include "config.h"
+#include "config.h"
 #include "decode.h"
 #include "encoding.h"
 #include "fesvr/option_parser.h"
@@ -155,12 +155,13 @@ struct StfHandler
     uint32_t vMinor = 0;
     uint32_t vPatch = 0;
 
+    //The version and SHA's are written to the trace
     if(!force_zero_sha) {
-//      spike_sha = STF_SPIKE_GIT_SHA;
-//      stf_lib_sha = STF_LIB_GIT_SHA;
-//      vMajor = STF_SPIKE_VERSION_MAJOR;
-//      vMinor = STF_SPIKE_VERSION_MINOR;
-//      vPatch = STF_SPIKE_VERSION_PATCH;
+      spike_sha = STF_SPIKE_GIT_SHA;
+      stf_lib_sha = STF_LIB_GIT_SHA;
+      vMajor = STF_SPIKE_VERSION_MAJOR;
+      vMinor = STF_SPIKE_VERSION_MINOR;
+      vPatch = STF_SPIKE_VERSION_PATCH;
     }
 
     stf_writer.addTraceInfo(stf::TraceInfoRecord(

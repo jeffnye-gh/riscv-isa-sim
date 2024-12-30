@@ -7,10 +7,9 @@ Preface
 This fork of riscv-isa-sim (aka Spike) has support for STF trace 
 generation.
 
-The contributors to this work were:
+Condor Computing has donated and maintains this fork.
 
-Stan Iwan, on behalf of Condor Computing
-Jeff Nye, Condor Computing
+Contact Jeff Nye, Condor Computing.
 
 The STF support is on the branch `spike_dev`
 

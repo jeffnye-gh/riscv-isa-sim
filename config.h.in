@@ -6,12 +6,6 @@
 /* Define if subproject MCPPBS_SPROJ_NORM is enabled */
 #undef CUSTOMEXT_ENABLED
 
-/* Default value for --isa switch */
-#undef DEFAULT_ISA
-
-/* Default value for --priv switch */
-#undef DEFAULT_PRIV
-
 /* Define if subproject MCPPBS_SPROJ_NORM is enabled */
 #undef DISASM_ENABLED
 
@@ -32,6 +26,9 @@
 
 /* define if the Boost::Regex library is available */
 #undef HAVE_BOOST_REGEX
+
+/* Clang supports PCH */
+#undef HAVE_CLANG_PCH
 
 /* Dynamic library loading is supported */
 #undef HAVE_DLOPEN
@@ -118,6 +115,21 @@
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
+
+/* Git SHA of stf_lib submodule */
+#undef STF_LIB_GIT_SHA
+
+/* Git SHA of STF_SPIKE repository */
+#undef STF_SPIKE_GIT_SHA
+
+/* STF Spike Version Major */
+#undef STF_SPIKE_VERSION_MAJOR
+
+/* STF Spike Version Minor */
+#undef STF_SPIKE_VERSION_MINOR
+
+/* STF Spike Version Patch */
+#undef STF_SPIKE_VERSION_PATCH
 
 /* Default value for --target switch */
 #undef TARGET_ARCH

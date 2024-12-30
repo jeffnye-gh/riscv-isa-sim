@@ -658,8 +658,6 @@ BOOST_REGEX_LIB
 BOOST_ASIO_LIB
 BOOST_LDFLAGS
 BOOST_CPPFLAGS
-HAVE_CLANG_PCH
-HAVE_INT128
 EGREP
 GREP
 INSTALL_DATA
@@ -737,8 +735,6 @@ with_boost
 with_boost_libdir
 with_boost_asio
 with_boost_regex
-with_isa
-with_priv
 with_target
 enable_dual_endian
 '
@@ -1403,9 +1399,6 @@ Optional Packages:
                           use the Regex library from boost - it is possible to
                           specify a certain library for the linker e.g.
                           --with-boost-regex=boost_regex-gcc-mt-d-1_33_1
-  --with-isa=RV64IMAFDC_zicntr_zihpm
-                          Sets the default RISC-V ISA
-  --with-priv=MSU         Sets the default RISC-V privilege modes supported
   --with-target=riscv64-unknown-elf
                           Sets the default target config
 
@@ -5102,7 +5095,7 @@ printf "%s\n" "#define AC_APPLE_UNIVERSAL_BUILD 1" >>confdefs.h
 
 
 #-------------------------------------------------------------------------
-# Check for the stf_lib submodule
+# Check for the stf_lib submodule and extract Git SHA
 #-------------------------------------------------------------------------
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for stf_lib submodule" >&5
@@ -5119,6 +5112,21 @@ printf "%s\n" "$as_me: stf_lib submodule not found or incomplete. Initializing a
     fi
 fi
 
+# Extract Git SHA for STF_SPIKE and stf_lib
+STF_SPIKE_GIT_SHA=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+
+printf "%s\n" "#define STF_SPIKE_GIT_SHA \"$STF_SPIKE_GIT_SHA\"" >>confdefs.h
+
+
+if test -d "${srcdir}/stf_lib"; then
+    STF_LIB_GIT_SHA=$(cd "${srcdir}/stf_lib" && git rev-parse HEAD 2>/dev/null || echo "unknown")
+else
+    STF_LIB_GIT_SHA="unknown"
+fi
+
+printf "%s\n" "#define STF_LIB_GIT_SHA \"$STF_LIB_GIT_SHA\"" >>confdefs.h
+
+
 #-------------------------------------------------------------------------
 # Configure and build stf_lib
 #-------------------------------------------------------------------------
@@ -5130,7 +5138,7 @@ if test ! -d "$STF_LIB_BUILD_DIR"; then
     mkdir -p "$STF_LIB_BUILD_DIR" || as_fn_error $? "Failed to create build directory for stf_lib" "$LINENO" 5
 fi
 
-(cd "$STF_LIB_BUILD_DIR" && cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)) || \
+(cd "$STF_LIB_BUILD_DIR" && cmake .. -DCMAKE_BUILD_TYPE=FastDebug -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF && make -j$(nproc)) || \
     as_fn_error $? "Failed to build stf_lib submodule" "$LINENO" 5
 
 #-------------------------------------------------------------------------
@@ -5148,12 +5156,26 @@ else
 fi
 
 #-------------------------------------------------------------------------
+# Version Information
+#-------------------------------------------------------------------------
+
+STF_SPIKE_VERSION_MAJOR=1
+STF_SPIKE_VERSION_MINOR=0
+STF_SPIKE_VERSION_PATCH=0
+
+
+printf "%s\n" "#define STF_SPIKE_VERSION_MAJOR $STF_SPIKE_VERSION_MAJOR" >>confdefs.h
+
+
+printf "%s\n" "#define STF_SPIKE_VERSION_MINOR $STF_SPIKE_VERSION_MINOR" >>confdefs.h
+
+
+printf "%s\n" "#define STF_SPIKE_VERSION_PATCH $STF_SPIKE_VERSION_PATCH" >>confdefs.h
+
+
+#-------------------------------------------------------------------------
 # MCPPBS specific program checks
 #-------------------------------------------------------------------------
-# These macros check to see if we can do a stow-based install and also
-# check for an isa simulator suitable for running the unit test programs
-# via the makefile.
-
 
   # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
@@ -5436,8 +5458,6 @@ printf "%s\n" "$ac_cv_path_EGREP" >&6; }
 ac_fn_cxx_check_type "$LINENO" "__int128_t" "ac_cv_type___int128_t" "$ac_includes_default"
 if test "x$ac_cv_type___int128_t" = xyes
 then :
-  HAVE_INT128=yes
-
 
 printf "%s\n" "#define HAVE_INT128 1" >>confdefs.h
 
@@ -5562,7 +5582,8 @@ fi
 printf "%s\n" "$ax_cv_check_cxxflags___relocatable_pch" >&6; }
 if test "x$ax_cv_check_cxxflags___relocatable_pch" = xyes
 then :
-  HAVE_CLANG_PCH=yes
+
+printf "%s\n" "#define HAVE_CLANG_PCH 1" >>confdefs.h
 
 else $as_nop
   :
@@ -5572,10 +5593,6 @@ fi
 #-------------------------------------------------------------------------
 # MCPPBS subproject list
 #-------------------------------------------------------------------------
-# Order list so that subprojects only depend on those listed earlier.
-# The '*' suffix indicates an optional subproject. The '**' suffix
-# indicates an optional subproject which is also the name of a group.
-
 
 
   # Add command line argument to enable all optional subprojects
@@ -6608,34 +6625,6 @@ fi
 
 
 
-# Check whether --with-isa was given.
-if test ${with_isa+y}
-then :
-  withval=$with_isa;
-printf "%s\n" "#define DEFAULT_ISA \"$withval\"" >>confdefs.h
-
-else $as_nop
-
-printf "%s\n" "#define DEFAULT_ISA \"RV64IMAFDC_zicntr_zihpm\"" >>confdefs.h
-
-fi
-
-
-
-# Check whether --with-priv was given.
-if test ${with_priv+y}
-then :
-  withval=$with_priv;
-printf "%s\n" "#define DEFAULT_PRIV \"$withval\"" >>confdefs.h
-
-else $as_nop
-
-printf "%s\n" "#define DEFAULT_PRIV \"MSU\"" >>confdefs.h
-
-fi
-
-
-
 # Check whether --with-target was given.
 if test ${with_target+y}
 then :
@@ -7054,17 +7043,6 @@ printf "%s\n" "#define SPIKE_DASM_ENABLED /**/" >>confdefs.h
 
 
 
-
-#-------------------------------------------------------------------------
-# MCPPBS subproject groups
-#-------------------------------------------------------------------------
-# If a group has the same name as a subproject then you must add the
-# '**' suffix in the subproject list above. The list of subprojects in a
-# group should be ordered so that subprojets only depend on those listed
-# earlier. Here is an example:
-#
-#  MCPPBS_GROUP( [group-name], [sproja,sprojb,...] )
-#
 
 #-------------------------------------------------------------------------
 # Output
@@ -8364,5 +8342,6 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 printf "%s\n" "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
+
 
 
